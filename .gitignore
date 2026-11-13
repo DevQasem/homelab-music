@@ -1,0 +1,20 @@
+# Your library, database (password hash, sessions, Spotify keys) and AI models
+data/
+
+# Local secrets and settings
+.env
+.env.*
+!.env.example
+
+# Personal notes in the project folder
+/*.txt
+!/requirements.txt
+
+# Editor, OS and Python leftovers
+.claude/
+.vscode/
+.idea/
+__pycache__/
+*.pyc
+.DS_Store
+Thumbs.db

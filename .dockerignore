@@ -1,0 +1,10 @@
+data
+.env
+.env.*
+.git
+.claude
+README.md
+*.txt
+!requirements.txt
+!ai/requirements.txt
+**/__pycache__

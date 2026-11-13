@@ -1,0 +1,7 @@
+demucs
+transformers>=4.44,<5
+sentencepiece
+protobuf
+numpy
+fastapi>=0.115
+uvicorn[standard]>=0.30

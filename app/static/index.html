@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0d0f14">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Homelab Music</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎵</text></svg>">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="bg" aria-hidden="true"><i></i><i></i><i></i></div>
+
+<div class="app">
+  <aside class="side">
+    <div class="logo"><span class="disc"></span><b>Homelab Music</b></div>
+    <button class="nav" data-view="home"><i data-ico="home"></i><span>Home</span></button>
+    <button class="nav" data-view="search"><i data-ico="search"></i><span>Search</span></button>
+    <button class="nav" data-view="library"><i data-ico="music"></i><span>Library</span></button>
+    <button class="nav" data-view="liked"><i data-ico="heart"></i><span>Liked</span></button>
+    <button class="nav" data-view="recent"><i data-ico="history"></i><span>Recently played</span></button>
+    <button class="nav" data-view="top"><i data-ico="trending"></i><span>Most played</span></button>
+    <button class="nav" data-view="folders"><i data-ico="folder"></i><span>Folders</span></button>
+    <button class="nav" data-view="remix"><i data-ico="tune"></i><span>Remix</span></button>
+    <div class="side-h"><span>Folders &amp; playlists</span><button id="newFolder" class="icon-btn" title="New folder"><i data-ico="plus"></i></button></div>
+    <div id="pls" class="pls"></div>
+  </aside>
+
+  <div class="content">
+    <header class="top">
+      <form id="form" class="search">
+        <i data-ico="search"></i>
+        <input id="q" placeholder="Search YouTube or paste a YouTube / Spotify link" autocomplete="off" enterkeyhint="search">
+      </form>
+      <button id="uploadBtn" class="btn ghost" title="Add music from this device"><i data-ico="upload"></i><span>Upload</span></button>
+      <button id="setBtn" class="icon-btn top-set" title="Settings"><i data-ico="gear"></i></button>
+      <input id="file" type="file" multiple hidden accept="audio/*,video/*,.mp3,.m4a,.flac,.wav,.ogg,.opus,.aac,.wma,.mp4,.mkv,.webm,.mov">
+    </header>
+    <main id="main"></main>
+    <div class="drop" id="drop"><div><i data-ico="upload"></i>Drop audio files to add them</div></div>
+  </div>
+</div>
+
+<footer class="player" id="player">
+  <div class="pbar"><i id="pbar"></i></div>
+  <button class="now" id="openNp" title="Now playing &amp; lyrics">
+    <img id="art" alt="">
+    <span><b id="nowT">Nothing playing</b><small id="nowA">Pick a song to start</small></span>
+  </button>
+  <div class="ctl">
+    <div class="b">
+      <button class="js-shuf icon-btn" title="Shuffle"><i data-ico="shuffle"></i></button>
+      <button class="js-prev icon-btn" title="Previous"><i data-ico="prev"></i></button>
+      <button class="js-play play" title="Play / pause"><i data-ico="play"></i></button>
+      <button class="js-next icon-btn" title="Next"><i data-ico="next"></i></button>
+      <button class="js-rep icon-btn" title="Repeat"><i data-ico="repeat"></i></button>
+    </div>
+    <div class="seek"><span class="js-cur">0:00</span><input class="js-seek" type="range" min="0" max="1" step="0.1" value="0" aria-label="Seek"><span class="js-dur">0:00</span></div>
+  </div>
+  <div class="extra">
+    <button class="icon-btn on" id="saveBtn" title="Download this song to your library" hidden><i data-ico="download"></i></button>
+    <button class="icon-btn heart" id="likeBtn" title="Like" hidden><i data-ico="heartLine"></i></button>
+    <button class="icon-btn" id="lyricsBtn" title="Lyrics"><i data-ico="lyrics"></i></button>
+    <button class="icon-btn" id="queueBtn" title="Queue"><i data-ico="queue"></i></button>
+    <i data-ico="volume"></i>
+    <input id="vol" type="range" min="0" max="1" step="0.01" value="1" aria-label="Volume">
+  </div>
+</footer>
+
+<nav class="tabs">
+  <button data-view="library"><i data-ico="music"></i>Library</button>
+  <button data-view="liked"><i data-ico="heart"></i>Liked</button>
+  <button data-view="folders"><i data-ico="folder"></i>Folders</button>
+  <button data-view="settings"><i data-ico="gear"></i>Settings</button>
+</nav>
+
+<section class="np" id="np" aria-hidden="true">
+  <button class="np-rail" id="npRail" title="Show now playing, video and lyrics"><i data-ico="left"></i></button>
+  <div class="np-bg" id="npBg"></div>
+  <div class="np-top">
+    <button class="icon-btn" id="closeNp" title="Hide"><i data-ico="down"></i></button>
+    <span>Now playing</span>
+    <button class="icon-btn" id="npFull" title="Expand / shrink"><i data-ico="fullscreen"></i></button>
+    <button class="icon-btn" id="npMore" title="More"><i data-ico="more"></i></button>
+  </div>
+  <div class="np-body">
+    <div class="np-left">
+      <div class="seg av-tabs" id="avTabs" hidden><button data-m="audio"><i data-ico="music"></i>Audio</button><button data-m="video"><i data-ico="video"></i>Video</button></div>
+      <div class="art-wrap" id="artWrap">
+        <img id="npArt" alt="">
+        <canvas id="viz" aria-hidden="true"></canvas>
+        <video id="audio" playsinline preload="auto"></video>
+      </div>
+      <h2 id="npT">Nothing playing</h2>
+      <p id="npA"></p>
+      <div class="np-act">
+        <button class="icon-btn heart" id="npLike" title="Like" hidden><i data-ico="heartLine"></i></button>
+        <button class="icon-btn" id="npQueue" title="Queue"><i data-ico="queue"></i></button>
+        <button class="icon-btn" id="fsBtn" title="Full screen" hidden><i data-ico="fullscreen"></i></button>
+      </div>
+      <button class="btn" id="npSave" hidden><i data-ico="download"></i><span>Download to library</span></button>
+      <div class="seek"><span class="js-cur">0:00</span><input class="js-seek" type="range" min="0" max="1" step="0.1" value="0" aria-label="Seek"><span class="js-dur">0:00</span></div>
+      <div class="b">
+        <button class="js-shuf icon-btn" title="Shuffle"><i data-ico="shuffle"></i></button>
+        <button class="js-prev icon-btn big" title="Previous"><i data-ico="prev"></i></button>
+        <button class="js-play play big" title="Play / pause"><i data-ico="play"></i></button>
+        <button class="js-next icon-btn big" title="Next"><i data-ico="next"></i></button>
+        <button class="js-rep icon-btn" title="Repeat"><i data-ico="repeat"></i></button>
+      </div>
+    </div>
+    <div class="np-right">
+      <div class="ly-head">
+        <b>Lyrics</b>
+        <span class="ly-sync" id="lySync" hidden title="Shift the lyrics if they run early or late">
+          <button class="chip" id="lyEarlier" title="Show lyrics earlier">−</button><span id="lyOff">0.0s</span><button class="chip" id="lyLater" title="Show lyrics later">+</button>
+        </span>
+        <button class="chip" id="lyRefetch">Re-fetch</button>
+        <button class="chip" id="lyUpload" title="Use a .lrc or .txt file from this device">Upload</button>
+        <button class="chip" id="lySave">Save</button>
+        <input type="file" id="lyFile" accept=".lrc,.txt,text/plain" hidden>
+      </div>
+      <div class="lyrics" id="lyrics"></div>
+    </div>
+  </div>
+</section>
+
+<div class="scrim" id="scrim" hidden></div>
+<div class="menu" id="menu" hidden></div>
+<aside class="drawer" id="queue" aria-hidden="true">
+  <div class="dr-head"><b>Queue</b><button class="chip" id="qClear">Clear</button><button class="icon-btn" id="qClose" title="Close"><i data-ico="close"></i></button></div>
+  <div class="dr-list" id="qList"></div>
+</aside>
+
+<div class="modal" id="settings" hidden>
+  <div class="sheet" role="dialog" aria-label="Settings">
+    <div class="m-head"><i data-ico="gear"></i><b>Settings</b><button class="icon-btn" id="setClose" title="Close"><i data-ico="close"></i></button></div>
+    <div class="m-body">
+      <nav class="m-nav" id="setNav"></nav>
+      <div class="m-pane" id="setPane"></div>
+    </div>
+  </div>
+</div>
+
+<div class="login" id="login" hidden>
+  <form id="loginForm">
+    <span class="disc"></span>
+    <h2>Homelab Music</h2>
+    <p>This library is locked.</p>
+    <input id="loginPw" type="password" placeholder="Password" autocomplete="current-password" required>
+    <button class="btn"><i data-ico="lock"></i><span>Unlock</span></button>
+    <small id="loginErr"></small>
+  </form>
+</div>
+
+<div id="toasts"></div>
+<script src="app.js"></script>
+</body>
+</html>

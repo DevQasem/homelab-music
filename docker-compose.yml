@@ -1,0 +1,41 @@
+services:
+  music:
+    build: .
+    container_name: homelab-music
+    restart: unless-stopped
+    ports:
+      - "8337:8000"          # open http://<homelab-ip>:8337
+    volumes:
+      - ./data:/data         # audio files + library database
+    environment:
+      YTDLP_AUTO_UPDATE: "1" # update yt-dlp on each start (restart to fix YouTube breakage)
+      DOWNLOAD_WORKERS: "2"
+      # Optional: require a password to open the library (can also be set in Settings)
+      APP_PASSWORD: ${APP_PASSWORD:-}
+      # Optional - only needed for Spotify playlists longer than 100 tracks.
+      # Create an app at https://developer.spotify.com/dashboard
+      SPOTIFY_CLIENT_ID: ${SPOTIFY_CLIENT_ID:-}
+      SPOTIFY_CLIENT_SECRET: ${SPOTIFY_CLIENT_SECRET:-}
+      AI_URL: http://ai:8000 # the optional AI add-on below
+
+  # Optional AI add-on: vocal remover + text-to-music. Needs an NVIDIA card
+  # (6 GB is enough) and the NVIDIA Container Toolkit on the host.
+  # It only starts when asked for:  docker compose --profile ai up -d --build
+  ai:
+    profiles: ["ai"]
+    build:
+      context: .
+      dockerfile: ai/Dockerfile
+    container_name: homelab-music-ai
+    restart: unless-stopped
+    volumes:
+      - ./data:/data         # same folder as the player: songs in, results out
+    environment:
+      MUSICGEN_MODEL: facebook/musicgen-small  # fits 6 GB; -medium needs more
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
